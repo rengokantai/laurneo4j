@@ -1,4 +1,72 @@
 #### psurneo4j
+#####3 Understanding
+```
+MATCH (a)-(r)->() return a.name, type(r);
+```
+#####4 Getting prop from paths
+get full path
+```
+MATCH p=(a)-[:ACTED_IN]->(m) RETURN p;
+MATCH p=(a)-[:ACTED_IN]->(m) q=(d)-[:DIRECTED]->(m) RETURN p q;
+```
+
+only show relationship
+```
+MATCH p=(a)-[:ACTED_IN]->(m) RETURN rels(p);
+```
+######Modify aggregate
+```
+MATCH(a)-[:ACTED_IN]->(m)<-[:DIRECTED]-(d) RETURN a.name,d.name,count(*);   //return number of m fulfill both a and b
+```
+
+list function.return all 
+```
+MATCH(a)-[:ACTED_IN]->(m)<-[:DIRECTED]-(d) RETURN a.name,d.name,list(m);
+```
+#####5 Using specific nodes for a cypher
+basic: return all.
+```
+MATCH(n) RETURN n;
+```
+director work with K:
+```
+MATCH (k:Person{name:"K"})-[r:ACTED_IN]->(m),(director)-[:DIRECTED]->(movie) RETURN director.name  //or
+MATCH (k:Person)-[r:ACTED_IN]->()<-[:DIRECTED]->(director) WHERE k.name="K" RETURN director.name
+```
+create index:
+```
+CREATE INDEX ON :Person(name)   //like :table(attr)
+```
+######Handling conditions
+```
+MATCH(t:Person{name:"K"})-[:ACTED_IN]->(m:Moive) WHERE m.release=1111 RETURN DISTINCT m.title
+```
+in
+```
+MATCH(t:Person{name:"K"})-[r:ACTED_IN]->(m:Moive) WHERE "N" IN (r.roles) RETURN DISTINCT m.title
+```
+another syntax
+```
+MATCH(t:Person{name:"K"})-[r:ACTED_IN]->(m:Moive) WHERE ANY (x IN r.roles WHERE x="N") RETURN DISTINCT m.title
+```
+
+
+######Handling on pattern
+```
+MATCH (k:Person{name:"A"})-[:ACTED_IN]->(m)<-[:ACTED_IN]-(actor), (j:Person{name:"B"}) WHERE NOT(j)-[:ACTED_IN]->(m) RETURN DISTINCT actor.name;
+```
+
+######find 5 busiest actor
+```
+MATCH (a:Person)-[:ACTED_IN]->() RETURN a.name,count(*) AS count ORDER BY count DESC LIMIT 5;
+```
+
+#####find 3 actors should work with a. (look for people work with a, then find other people woek with these people)
+```
+MATCH (a:Person)-[:ACTED_IN]->()<-[:ACTED_IN]-(c), (c)-[:ACTED_IN]->()<-[:ACTED_IN]-(coc) WHERE a.name="A"
+AND NOT((a)-[:ACTED_IN]->()<-[:ACTED_IN]-(coc)) AND coc<>a RETURN coc.name,count(coc) ORDER BY count(coc) DESC LIMIT 3;
+```
+
 #####6 Creating Entities with cypher
 match a movie
 ```
