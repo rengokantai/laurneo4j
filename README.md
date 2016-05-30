@@ -59,5 +59,38 @@ MATCH {k:Person {name:"K"}) DELETE k; //success
 ```
 challenge: all actors in same movie
 ```
-MATCH (a:Person)-[:ACTED_IN]->()<-[:ACTED_IN]-(b:Person) CREATE UNIQUE (a)-[:KNOWS]-(b)
+MATCH (a:Person)-[:ACTED_IN]->()<-[:ACTED_IN]-(b:Person) CREATE UNIQUE (a)-[:KNOWS]-(b);
+```
+######Using the merge
+```
+MERGE (k:Person {name:"m"}) RETURN k;
+```
+create or match if does not exist
+```
+MERGE (k:Person {name:"k"}) ON CREATE SET k.created = timestamp() ON MATCH SET k.acc = coalesce(k.a,0)+1 RETURN k;
+```
+
+challenge: all actors in same movie
+```
+MATCH (a:Person)-[:ACTED_IN|:DIRECTED]->()<-[:ACTED_IN|:DIRECTED]-(b:Person) CREATE UNIQUE (a)-[:KNOWS]-(b);
+```
+######Exploring var len path
+```
+(a)-[*1..3]->(b)
+```
+find length=2
+```
+MATCH (k:Person {name:"T"})-[:KNOWS*2]-(fof) RETURN DISTINCT fof.name;
+```
+find friend of friend and not immediate friend
+```
+MATCH (k:Person {name:"T"})-[:KNOWS*2]-(fof) WHERE k <> fof AND NOT (k)-[:KNOWS]-(fof) RETURN DISTINCT fof.name;
+```
+######finding shortest path
+```
+MATCH p =shortestPath((a:Person)-[:KNOWS*]-(b:Person)) WHERE a.name="a" AND b.name="b" RETURN length(p);
+```
+######cahllenge, get all names
+```
+MATCH p =shortestPath((a:Person)-[:KNOWS*]-(b:Person)) WHERE a.name="a" AND b.name="b" RETURN [ n in nodes(p) | n.name] AS names;
 ```
