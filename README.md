@@ -1,4 +1,4 @@
-#### psurneo4j
+# laurneo4j
 #####3 Understanding
 ```
 MATCH (a)-(r)->() return a.name, type(r);
